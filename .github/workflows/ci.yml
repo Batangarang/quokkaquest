@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: quokkaquest
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: quokkaquest_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U quokkaquest"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://quokkaquest:test_password@localhost:5432/quokkaquest_test
+      JWT_SECRET: ci-test-secret-do-not-use-in-prod
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply migrations
+        run: |
+          for f in infra/postgres/migrations/*.sql; do
+            echo "Applying $f"
+            PGPASSWORD=test_password psql -h localhost -U quokkaquest -d quokkaquest_test -f "$f"
+          done
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build shared package
+        run: npm run build --workspace=packages/shared
+
+      - name: Run tests
+        run: npm run test --workspace=apps/api
+
+      - name: Build api and web
+        run: npm run build
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Placeholder — fill in once the Oracle VM is provisioned and reachable via SSH.
+      # Typical shape: build images, push to a registry (or rsync source), then
+      # `docker compose -f infra/docker-compose.yml up -d --build` over SSH.
+      - name: Deploy (not yet configured)
+        run: echo "Deploy step pending Oracle VM provisioning — see docs/open-questions.md"
