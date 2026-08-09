@@ -5,10 +5,13 @@ feature spec, `docs/architecture-decision.md` for the stack rationale, and
 `docs/multi-tenant-gdpr-plan.md` for the data model and compliance plan.
 
 **Phase 1 status:** core spine scaffolded — accounts/roles, task engine (create,
-assign, complete, rate 1–5), basic money calc, simple list-view dashboard.
+assign, complete, rate 1–5), basic money calc, simple list-view dashboard, and a
+guardian-only "Add a task" form (parents no longer need to insert tasks via SQL —
+only accounts still require that, see below).
 Not yet built: scheduling/calendar, badges, league table, kindness logs, theming,
-age multipliers, savings/IOU, events. See `docs/choirs-tasks-app-spec.md` for the
-full phase breakdown.
+age multipliers, savings/IOU, events, and marking/rating a task complete from the
+UI (the API endpoint exists — `POST /api/tasks/:taskId/complete` — but there's no
+form for it yet). See `docs/choirs-tasks-app-spec.md` for the full phase breakdown.
 
 ## Getting started (in GitHub Codespaces or locally)
 

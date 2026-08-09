@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, setToken } from '../api/client';
+import { api, setSession } from '../api/client';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -12,8 +12,8 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     try {
-      const { token } = await api.login(username, password);
-      setToken(token);
+      const { token, user } = await api.login(username, password);
+      setSession(token, user);
       navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');

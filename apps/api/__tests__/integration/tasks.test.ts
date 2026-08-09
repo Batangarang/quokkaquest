@@ -17,6 +17,7 @@ let householdBId: string;
 let taskAId: string;
 let tokenA: string;
 let tokenB: string;
+let parentTokenA: string;
 
 function signToken(userId: string, householdId: string, role: string) {
   return jwt.sign({ sub: userId, householdId, role }, env.JWT_SECRET, { expiresIn: '1h' });
@@ -42,9 +43,11 @@ beforeAll(async () => {
   );
   const kidA = users[1];
   const parentB = users[2];
+  const parentA = users[0];
 
   tokenA = signToken(kidA.id, householdAId, 'child');
   tokenB = signToken(parentB.id, householdBId, 'owner');
+  parentTokenA = signToken(parentA.id, householdAId, 'owner');
 
   const { rows: tasks } = await pool.query(
     `INSERT INTO tasks (household_id, name, base_value_pence, category, recurrence)
@@ -90,5 +93,14 @@ describe('GET /api/tasks', () => {
   it('rejects requests with no auth token', async () => {
     const res = await request(app).get('/api/tasks');
     expect(res.status).toBe(401);
+  });
+
+  it('shows a guardian every task in the household, not just their own assignments', async () => {
+    const res = await request(app)
+      .get('/api/tasks')
+      .set('Authorization', `Bearer ${parentTokenA}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.map((t: { id: string }) => t.id)).toContain(taskAId);
   });
 });

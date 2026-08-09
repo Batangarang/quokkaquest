@@ -55,6 +55,18 @@ export async function listTasksForUser(householdId: string, userId: string) {
   });
 }
 
+/** All tasks in the household regardless of assignee — used for the guardian's overview. */
+export async function listAllTasksForHousehold(householdId: string) {
+  return withHouseholdContext(householdId, async (client) => {
+    const { rows } = await client.query(
+      `SELECT id, name, base_value_pence, category, recurrence, late_deduction_percent
+       FROM tasks
+       ORDER BY created_at DESC`,
+    );
+    return rows;
+  });
+}
+
 interface CompleteTaskInput {
   taskId: string;
   userId: string;

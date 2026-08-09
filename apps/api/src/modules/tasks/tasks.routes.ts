@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireGuardian } from '../../middleware/auth';
-import { completeTask, createTask, listTasksForUser } from './tasks.service';
+import { completeTask, createTask, listAllTasksForHousehold, listTasksForUser } from './tasks.service';
 
 export const tasksRouter = Router();
 
@@ -28,12 +28,21 @@ tasksRouter.post('/', requireGuardian, async (req, res, next) => {
   }
 });
 
-// A child can view their own task list; guardians can pass ?userId= to view a
-// specific child's list (still scoped to their own household by requireAuth).
+// A child sees their own assigned tasks. A guardian with no ?userId= sees every
+// task in the household (their "Family Tasks" overview); a guardian can still
+// pass ?userId= to view one specific child's list.
+const GUARDIAN_ROLES = ['owner', 'co-admin'];
+
 tasksRouter.get('/', async (req, res, next) => {
   try {
-    const targetUserId = (req.query.userId as string | undefined) ?? req.auth!.userId;
-    const tasks = await listTasksForUser(req.auth!.householdId, targetUserId);
+    const requestedUserId = req.query.userId as string | undefined;
+    const isGuardian = GUARDIAN_ROLES.includes(req.auth!.role);
+
+    const tasks =
+      isGuardian && !requestedUserId
+        ? await listAllTasksForHousehold(req.auth!.householdId)
+        : await listTasksForUser(req.auth!.householdId, requestedUserId ?? req.auth!.userId);
+
     res.json(tasks);
   } catch (err) {
     next(err);

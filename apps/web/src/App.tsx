@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import CreateTaskPage from './pages/CreateTaskPage';
 import { getToken } from './api/client';
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
@@ -17,6 +18,14 @@ export default function App() {
           element={
             <RequireAuth>
               <DashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/tasks/new"
+          element={
+            <RequireAuth>
+              <CreateTaskPage />
             </RequireAuth>
           }
         />

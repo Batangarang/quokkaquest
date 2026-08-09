@@ -1,30 +1,38 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api/client';
+import { Link } from 'react-router-dom';
+import { api, getStoredUser, type TaskRow } from '../api/client';
 
-interface TaskRow {
-  id: string;
-  name: string;
-  base_value_pence: number;
-  category: string;
-  recurrence: string;
-}
+const GUARDIAN_ROLES = ['owner', 'co-admin'];
 
 // Phase 1 scope: plain list view, no calendar and no theming yet
-// (see docs/quokkaquest-spec.md — those land in Phase 2).
+// (see docs/choirs-tasks-app-spec.md — those land in Phase 2).
 export default function DashboardPage() {
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const user = getStoredUser();
+  const isGuardian = user ? GUARDIAN_ROLES.includes(user.role) : false;
 
-  useEffect(() => {
+  function loadTasks() {
     api
       .listTasks()
-      .then((rows) => setTasks(rows as TaskRow[]))
+      .then(setTasks)
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load tasks'));
+  }
+
+  useEffect(() => {
+    loadTasks();
   }, []);
 
   return (
     <div style={{ maxWidth: 480, margin: '2rem auto', fontFamily: 'sans-serif' }}>
-      <h1>My Tasks</h1>
+      <h1>{isGuardian ? 'Family Tasks' : 'My Tasks'}</h1>
+
+      {isGuardian && (
+        <p>
+          <Link to="/tasks/new">+ Add a task</Link>
+        </p>
+      )}
+
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
       <ul>
         {tasks.map((task) => (
