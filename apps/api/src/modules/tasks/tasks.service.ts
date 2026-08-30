@@ -61,7 +61,9 @@ export async function listAllTasksForHousehold(householdId: string) {
     const { rows } = await client.query(
       `SELECT id, name, base_value_pence, category, recurrence, late_deduction_percent
        FROM tasks
+       WHERE household_id = $1
        ORDER BY created_at DESC`,
+      [householdId],
     );
     return rows;
   });

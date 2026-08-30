@@ -11,7 +11,8 @@ export interface HouseholdMember {
 export async function listHouseholdMembers(householdId: string): Promise<HouseholdMember[]> {
   return withHouseholdContext(householdId, async (client) => {
     const { rows } = await client.query(
-      `SELECT id, display_name, role FROM users ORDER BY role, display_name`,
+      `SELECT id, display_name, role FROM users WHERE household_id = $1 ORDER BY role, display_name`,
+      [householdId],
     );
     return rows;
   });
