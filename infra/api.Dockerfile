@@ -14,10 +14,12 @@ RUN npm run build --workspace=apps/api
 FROM node:20-alpine
 WORKDIR /repo
 ENV NODE_ENV=production
+ENV MIGRATIONS_DIR=/repo/infra/postgres/migrations
 COPY --from=build /repo/node_modules ./node_modules
 COPY --from=build /repo/packages/shared/dist ./packages/shared/dist
 COPY --from=build /repo/packages/shared/package.json ./packages/shared/package.json
 COPY --from=build /repo/apps/api/dist ./apps/api/dist
 COPY --from=build /repo/apps/api/package.json ./apps/api/package.json
+COPY infra/postgres/migrations ./infra/postgres/migrations
 EXPOSE 4000
 CMD ["node", "apps/api/dist/server.js"]

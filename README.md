@@ -5,13 +5,13 @@ feature spec, `docs/architecture-decision.md` for the stack rationale, and
 `docs/multi-tenant-gdpr-plan.md` for the data model and compliance plan.
 
 **Phase 1 status:** core spine scaffolded — accounts/roles, task engine (create,
-assign, complete, rate 1–5), basic money calc, simple list-view dashboard, and a
-guardian-only "Add a task" form (parents no longer need to insert tasks via SQL —
-only accounts still require that, see below).
-Not yet built: scheduling/calendar, badges, league table, kindness logs, theming,
-age multipliers, savings/IOU, events, and marking/rating a task complete from the
-UI (the API endpoint exists — `POST /api/tasks/:taskId/complete` — but there's no
-form for it yet). See `docs/choirs-tasks-app-spec.md` for the full phase breakdown.
+assign, complete, rate 1–5, with a "mark complete" form for it), basic money
+calc, simple list-view dashboard, and a guardian-only "Add a task" form
+(parents no longer need to insert tasks via SQL — only accounts still require
+that, see below).
+Not yet built: scheduling/calendar, badges, league table, kindness logs,
+theming, age multipliers, savings/IOU, events. See `docs/choirs-tasks-app-spec.md`
+for the full phase breakdown.
 
 ## Getting started (in GitHub Codespaces or locally)
 
@@ -61,3 +61,26 @@ Integration tests require the Postgres container running with migrations applied
 ## Repo layout
 
 See `docs/coding-conventions.md` for naming, branching, and structure conventions.
+
+## Deploying (quick/free, for testing on a phone etc.)
+
+`render.yaml` is a [Render](https://render.com) Blueprint: a free Postgres
+database, the API as a Docker web service (`infra/api.Dockerfile`, running
+migrations automatically via `apps/api/src/scripts/migrate.ts` before each
+deploy), and the web app as a static site.
+
+1. Sign up at render.com, then **New +** → **Blueprint** → connect this repo.
+   Render detects `render.yaml` and creates all three services — click Apply.
+2. Once the `quokkaquest-api` service is live, check its assigned URL. If it
+   isn't `https://quokkaquest-api.onrender.com` (the name was already taken),
+   update the `destination` in the `quokkaquest-web` service's `/api/*`
+   rewrite rule in `render.yaml` to match, then redeploy.
+3. Create your first household/user the same way as local dev (see
+   "Creating a test user" above), using the `psql` connection string from the
+   Render Postgres dashboard.
+
+Free-tier caveats: the API service spins down after 15 minutes idle (first
+request after that is slow to wake up), and the free database is deleted
+after 30 days unless upgraded. This isn't the production Oracle VM path
+described in `docs/architecture-decision.md` — just the fastest way to get a
+real URL for testing.
