@@ -1,3 +1,5 @@
+import type { AchievementRating, TaskCompletion } from '@quokkaquest/shared';
+
 const TOKEN_KEY = 'quokkaquest_token';
 const USER_KEY = 'quokkaquest_user';
 
@@ -57,6 +59,7 @@ export interface TaskRow {
   base_value_pence: number;
   category: 'chore' | 'task';
   recurrence: 'once' | 'daily' | 'weekly' | 'monthly' | 'custom';
+  late_deduction_percent: number;
 }
 
 export interface HouseholdMember {
@@ -74,6 +77,12 @@ export interface CreateTaskInput {
   lateDeductionPercent?: number;
 }
 
+export interface CompleteTaskInput {
+  scheduledFor: string;
+  rating: AchievementRating;
+  isLate?: boolean;
+}
+
 export const api = {
   login: (username: string, password: string) =>
     apiFetch<LoginResponse>('/auth/login', {
@@ -88,4 +97,9 @@ export const api = {
       body: JSON.stringify(input),
     }),
   listHouseholdMembers: () => apiFetch<HouseholdMember[]>('/users'),
+  completeTask: (taskId: string, input: CompleteTaskInput) =>
+    apiFetch<TaskCompletion>(`/tasks/${taskId}/complete`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
 };

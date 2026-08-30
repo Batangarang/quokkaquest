@@ -38,7 +38,11 @@ export async function login(username: string, password: string) {
   const token = jwt.sign(
     { sub: user.id, householdId: user.household_id, role: user.role },
     env.JWT_SECRET,
-    { expiresIn: env.JWT_EXPIRES_IN },
+    // @types/jsonwebtoken types expiresIn as a branded duration-string type, not
+    // plain string — env.JWT_EXPIRES_IN is zod-validated as a string, so this is
+    // just a type-shape mismatch, not a real risk (jwt.sign accepts any ms-style
+    // string like '7d' at runtime).
+    { expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] },
   );
 
   return {

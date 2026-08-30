@@ -38,7 +38,7 @@ export default function DashboardPage() {
         {tasks.map((task) => (
           <li key={task.id}>
             {task.name} — £{(task.base_value_pence / 100).toFixed(2)} ({task.category},{' '}
-            {task.recurrence})
+            {task.recurrence}) — <Link to={`/tasks/${task.id}/complete`}>Mark complete</Link>
           </li>
         ))}
       </ul>
