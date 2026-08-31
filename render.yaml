@@ -20,7 +20,8 @@ services:
     dockerContext: .
     plan: free
     healthCheckPath: /health
-    preDeployCommand: node apps/api/dist/scripts/migrate.js
+    # Migrations run automatically on container boot (see infra/api.Dockerfile's
+    # CMD), not as a preDeployCommand — that's a paid-plan-only Render feature.
     envVars:
       - key: NODE_ENV
         value: production

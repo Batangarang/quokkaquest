@@ -22,4 +22,7 @@ COPY --from=build /repo/apps/api/dist ./apps/api/dist
 COPY --from=build /repo/apps/api/package.json ./apps/api/package.json
 COPY infra/postgres/migrations ./infra/postgres/migrations
 EXPOSE 4000
-CMD ["node", "apps/api/dist/server.js"]
+# Migrations run on every boot (tracked/idempotent via schema_migrations — see
+# src/scripts/migrate.ts) rather than as a separate pre-deploy step, since not
+# every host supports one (e.g. Render's free tier doesn't).
+CMD ["sh", "-c", "node apps/api/dist/scripts/migrate.js && node apps/api/dist/server.js"]

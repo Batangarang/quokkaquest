@@ -8,7 +8,9 @@ services:
       POSTGRES_DB: quokkaquest
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./postgres/migrations:/docker-entrypoint-initdb.d:ro
+    # Schema is applied by the api container's own startup (see api.Dockerfile),
+    # not via docker-entrypoint-initdb.d, so it works the same way here as it
+    # does on hosts like Render that don't support a pre-deploy step.
     ports:
       - '5432:5432'
     healthcheck:

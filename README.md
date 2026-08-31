@@ -18,12 +18,14 @@ for the full phase breakdown.
 ```bash
 npm install
 
-# Start Postgres (migrations auto-apply on first container start via
-# infra/postgres/migrations mounted into docker-entrypoint-initdb.d)
+# Start Postgres
 cd infra && docker compose up -d postgres && cd ..
 
 # Copy env and fill in JWT_SECRET
 cp apps/api/.env.example apps/api/.env
+
+# Apply migrations (tracked in schema_migrations, safe to re-run)
+npm run migrate:dev --workspace=apps/api
 
 # Terminal 1
 npm run dev:api
@@ -66,8 +68,8 @@ See `docs/coding-conventions.md` for naming, branching, and structure convention
 
 `render.yaml` is a [Render](https://render.com) Blueprint: a free Postgres
 database, the API as a Docker web service (`infra/api.Dockerfile`, running
-migrations automatically via `apps/api/src/scripts/migrate.ts` before each
-deploy), and the web app as a static site.
+migrations automatically via `apps/api/src/scripts/migrate.ts` on every
+container boot, before the server starts), and the web app as a static site.
 
 1. Sign up at render.com, then **New +** → **Blueprint** → connect this repo.
    Render detects `render.yaml` and creates all three services — click Apply.
